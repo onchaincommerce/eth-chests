@@ -12,7 +12,7 @@ import { parseEther, formatEther } from 'ethers/lib/utils';
 import { useAccount } from 'wagmi';
 import { ethers } from 'ethers';
 
-const CONTRACT_ADDRESS = "0xad0B9085A343be3B5273619A053Ffa5c60789173";
+const CONTRACT_ADDRESS = "0xad0B9085A343be3B5273619A053Ffa5c60789173" as `0x${string}`;
 const CHEST_PRICE = "0.01";
 const BASE_SEPOLIA_CHAIN_ID = 84532;
 const BASE_SEPOLIA_EXPLORER = "https://sepolia.basescan.org";
