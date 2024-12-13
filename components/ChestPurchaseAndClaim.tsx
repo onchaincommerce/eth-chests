@@ -10,8 +10,6 @@ import {
 import type { LifecycleStatus } from '@coinbase/onchainkit/transaction';
 import { parseEther, formatEther } from 'ethers/lib/utils';
 import { useAccount } from 'wagmi';
-import { Wallet, ConnectWallet } from '@coinbase/onchainkit/wallet';
-import { Avatar, Name } from '@coinbase/onchainkit/identity';
 import { ethers } from 'ethers';
 
 const CONTRACT_ADDRESS = "0xad0B9085A343be3B5273619A053Ffa5c60789173";
