@@ -7,7 +7,7 @@ import {
   TransactionStatusLabel,
   TransactionStatusAction,
 } from "@coinbase/onchainkit/transaction";
-import type { LifecycleStatus } from '@coinbase/onchainkit/transaction';
+import type { LifecycleStatus, Call } from '@coinbase/onchainkit/transaction';
 import { parseEther, formatEther } from 'ethers/lib/utils';
 import { useAccount } from 'wagmi';
 import { ethers } from 'ethers';
@@ -16,13 +16,6 @@ const CONTRACT_ADDRESS = "0xad0B9085A343be3B5273619A053Ffa5c60789173" as `0x${st
 const CHEST_PRICE = "0.01";
 const BASE_SEPOLIA_CHAIN_ID = 84532;
 const BASE_SEPOLIA_EXPLORER = "https://sepolia.basescan.org";
-
-// Add type for the calls
-type TransactionCall = {
-  to: `0x${string}`;
-  data: `0x${string}`;
-  value?: string;
-};
 
 const contractInterface = new ethers.utils.Interface([
   "function buyChest() external payable",
@@ -45,22 +38,18 @@ export default function ChestPurchaseAndClaim() {
       setTxHash(receipt.transactionHash);
 
       if (!purchaseBlockNumber) {
-        // This is the buy transaction
         const blockNumber = Number(receipt.blockNumber);
         setPurchaseBlockNumber(blockNumber);
         setTimeout(() => setCanClaim(true), 15000);
       } else {
-        // This is the claim transaction
-        // Parse the PrizeAwarded event from the logs
         const logs = receipt.logs;
         for (const log of logs) {
           try {
             const parsedLog = contractInterface.parseLog(log);
             if (parsedLog.name === 'PrizeAwarded') {
               const prize = formatEther(parsedLog.args.prize);
-              console.log('Prize won:', prize); // Debug log
               setPrizeAmount(prize);
-              setCanClaim(false); // Make sure we're not in claim state
+              setCanClaim(false);
               break;
             }
           } catch (e) {
@@ -71,13 +60,13 @@ export default function ChestPurchaseAndClaim() {
     }
   }, [purchaseBlockNumber]);
 
-  const purchaseCalls: TransactionCall[] = [{
+  const purchaseCalls: Call[] = [{
     to: CONTRACT_ADDRESS,
     data: contractInterface.encodeFunctionData("buyChest", []) as `0x${string}`,
-    value: parseEther(CHEST_PRICE).toString(),
+    value: BigInt(parseEther(CHEST_PRICE).toString()),
   }];
 
-  const getClaimCalls = (): TransactionCall[] => {
+  const getClaimCalls = (): Call[] => {
     if (!purchaseBlockNumber) return [];
     return [{
       to: CONTRACT_ADDRESS,
