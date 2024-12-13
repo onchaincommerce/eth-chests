@@ -17,6 +17,13 @@ const CHEST_PRICE = "0.01";
 const BASE_SEPOLIA_CHAIN_ID = 84532;
 const BASE_SEPOLIA_EXPLORER = "https://sepolia.basescan.org";
 
+// Add type for the calls
+type TransactionCall = {
+  to: `0x${string}`;
+  data: `0x${string}`;
+  value?: string;
+};
+
 const contractInterface = new ethers.utils.Interface([
   "function buyChest() external payable",
   "function claimPrize(uint256 purchaseBlockNumber) external",
@@ -64,17 +71,17 @@ export default function ChestPurchaseAndClaim() {
     }
   }, [purchaseBlockNumber]);
 
-  const purchaseCalls = [{
+  const purchaseCalls: TransactionCall[] = [{
     to: CONTRACT_ADDRESS,
-    data: contractInterface.encodeFunctionData("buyChest", []),
+    data: contractInterface.encodeFunctionData("buyChest", []) as `0x${string}`,
     value: parseEther(CHEST_PRICE).toString(),
   }];
 
-  const getClaimCalls = () => {
+  const getClaimCalls = (): TransactionCall[] => {
     if (!purchaseBlockNumber) return [];
     return [{
       to: CONTRACT_ADDRESS,
-      data: contractInterface.encodeFunctionData("claimPrize", [purchaseBlockNumber]),
+      data: contractInterface.encodeFunctionData("claimPrize", [purchaseBlockNumber]) as `0x${string}`,
     }];
   };
 
