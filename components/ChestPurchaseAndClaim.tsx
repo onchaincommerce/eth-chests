@@ -113,9 +113,10 @@ export default function ChestPurchaseAndClaim() {
               calls={purchaseCalls}
               onStatus={handleOnStatus}
             >
-              <TransactionButton className="w-full py-3 px-4 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors">
-                Buy Chest 🎁
-              </TransactionButton>
+              <TransactionButton 
+                className="w-full py-3 px-4 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors"
+                text="Buy Chest 🎁"
+              />
               <TransactionSponsor />
               <TransactionStatus>
                 <TransactionStatusLabel />
@@ -138,9 +139,10 @@ export default function ChestPurchaseAndClaim() {
               calls={getClaimCalls()}
               onStatus={handleOnStatus}
             >
-              <TransactionButton className="w-full py-3 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-                Claim Prize 💎
-              </TransactionButton>
+              <TransactionButton 
+                className="w-full py-3 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                text="Claim Prize 💎"
+              />
               <TransactionSponsor />
               <TransactionStatus>
                 <TransactionStatusLabel />
