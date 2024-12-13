@@ -12,7 +12,14 @@ import { parseEther, formatEther } from 'ethers/lib/utils';
 import { useAccount } from 'wagmi';
 import { ethers } from 'ethers';
 
-const CONTRACT_ADDRESS = "0xad0B9085A343be3B5273619A053Ffa5c60789173";
+// Define the type that matches OnchainKit's expectations
+type TransactionCall = {
+  to: `0x${string}`;
+  data: `0x${string}`;
+  value?: bigint;
+};
+
+const CONTRACT_ADDRESS = "0xad0B9085A343be3B5273619A053Ffa5c60789173" as `0x${string}`;
 const OWNER_ADDRESS = "0xc17c78C007FC5C01d796a30334fa12b025426652";
 const BASE_SEPOLIA_CHAIN_ID = 84532;
 
@@ -45,15 +52,15 @@ export default function ContractOwner() {
   }, []);
 
   // Create withdraw transaction
-  const getWithdrawCalls = () => [{
+  const getWithdrawCalls = (): TransactionCall[] => [{
     to: CONTRACT_ADDRESS,
     data: contractInterface.encodeFunctionData("withdraw", [
       parseEther(withdrawAmount).toString()
-    ]),
+    ]) as `0x${string}`,
   }];
 
   if (!isOwner) {
-    return null; // Only show to contract owner
+    return null;
   }
 
   return (
@@ -96,9 +103,10 @@ export default function ContractOwner() {
             calls={getWithdrawCalls()}
             onStatus={handleOnStatus}
           >
-            <TransactionButton className="w-full py-3 px-4 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
-              Withdraw ETH
-            </TransactionButton>
+            <TransactionButton 
+              className="w-full py-3 px-4 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              text="Withdraw ETH"
+            />
             <TransactionSponsor />
             <TransactionStatus>
               <TransactionStatusLabel />
