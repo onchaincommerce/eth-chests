@@ -7,10 +7,17 @@ import {
   TransactionStatusLabel,
   TransactionStatusAction,
 } from "@coinbase/onchainkit/transaction";
-import type { LifecycleStatus, Call } from '@coinbase/onchainkit/transaction';
+import type { LifecycleStatus } from '@coinbase/onchainkit/transaction';
 import { parseEther, formatEther } from 'ethers/lib/utils';
 import { useAccount } from 'wagmi';
 import { ethers } from 'ethers';
+
+// Define the type that matches OnchainKit's expectations
+type TransactionCall = {
+  to: `0x${string}`;
+  data: `0x${string}`;
+  value?: bigint;
+};
 
 const CONTRACT_ADDRESS = "0xad0B9085A343be3B5273619A053Ffa5c60789173" as `0x${string}`;
 const CHEST_PRICE = "0.01";
@@ -60,13 +67,13 @@ export default function ChestPurchaseAndClaim() {
     }
   }, [purchaseBlockNumber]);
 
-  const purchaseCalls: Call[] = [{
+  const purchaseCalls: TransactionCall[] = [{
     to: CONTRACT_ADDRESS,
     data: contractInterface.encodeFunctionData("buyChest", []) as `0x${string}`,
     value: BigInt(parseEther(CHEST_PRICE).toString()),
   }];
 
-  const getClaimCalls = (): Call[] => {
+  const getClaimCalls = (): TransactionCall[] => {
     if (!purchaseBlockNumber) return [];
     return [{
       to: CONTRACT_ADDRESS,
