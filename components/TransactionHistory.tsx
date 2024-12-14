@@ -35,6 +35,18 @@ const contractInterface = new ethers.utils.Interface([
   "event PrizeAwarded(address indexed player, uint256 prize)"
 ]);
 
+interface BasescanLog {
+  topics: string[];
+  data: string;
+  timeStamp: string;
+  transactionHash: string;
+}
+
+interface BasescanResponse {
+  status: string;
+  result: BasescanLog[];
+}
+
 export default function TransactionHistory() {
   const [prizeEvents, setPrizeEvents] = useState<PrizeEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,10 +64,10 @@ export default function TransactionHistory() {
 
       // Fetch events from Basescan API
       const response = await fetch(`${BASESCAN_API}?module=logs&action=getLogs&fromBlock=0&toBlock=${latestBlock}&address=${CONTRACT_ADDRESS}&topic0=${ethers.utils.id("PrizeAwarded(address,uint256)")}&apikey=${BASESCAN_API_KEY}`);
-      const data = await response.json();
+      const data: BasescanResponse = await response.json();
 
       if (data.status === '1' && data.result) {
-        const events = data.result.map((log: any) => {
+        const events = data.result.map((log: BasescanLog) => {
           const parsedLog = contractInterface.parseLog({
             topics: log.topics,
             data: log.data
