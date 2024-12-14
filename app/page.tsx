@@ -18,6 +18,7 @@ import ChestPurchaseAndClaim from '../components/ChestPurchaseAndClaim';
 import ContractOwner from '../components/ContractOwner';
 import Image from 'next/image';
 import { useEthPrice } from '../hooks/useEthPrice';
+import TransactionHistory from '../components/TransactionHistory';
 
 export default function App() {
   const ethPrice = useEthPrice();
@@ -113,6 +114,9 @@ export default function App() {
                   <ChestPurchaseAndClaim />
                 </div>
               </div>
+              
+              {/* Transaction History */}
+              <TransactionHistory />
               
               {/* Prize tiers info */}
               <div className="backdrop-blur-md bg-black/20 p-8 rounded-lg border border-amber-900/30 shadow-xl">
