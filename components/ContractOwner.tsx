@@ -44,6 +44,7 @@ export default function ContractOwner() {
     setContractBalance(formatEther(balance));
   };
 
+  // Handle transaction status
   const handleOnStatus = useCallback((status: LifecycleStatus) => {
     console.log('Transaction status:', status);
     if (status.statusName === 'success') {
@@ -59,60 +60,63 @@ export default function ContractOwner() {
     ]) as `0x${string}`,
   }];
 
+  // If not owner, don't render anything
   if (!isOwner) {
     return null;
   }
 
   return (
-    <div className="flex flex-col items-center justify-center p-8 bg-red-50 dark:bg-red-900/20 rounded-lg shadow-lg max-w-md mx-auto mt-8">
-      <h2 className="text-2xl font-bold mb-6 text-center">Contract Owner Controls</h2>
-      
-      {/* Contract Balance */}
-      <div className="w-full mb-6">
-        <div className="flex justify-between items-center">
-          <span>Contract Balance:</span>
-          <span className="font-bold">
-            {contractBalance ? `${contractBalance} ETH` : '...'}
-          </span>
-        </div>
-        <button 
-          onClick={fetchContractBalance}
-          className="mt-2 text-sm text-blue-600 hover:underline"
-        >
-          Refresh Balance
-        </button>
-      </div>
-
-      {/* Withdraw Form */}
-      <div className="w-full">
-        <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md mb-6">
-          <h3 className="text-xl font-semibold mb-4">Withdraw Funds</h3>
-          <div className="mb-4">
-            <input
-              type="number"
-              value={withdrawAmount}
-              onChange={(e) => setWithdrawAmount(e.target.value)}
-              step="0.01"
-              min="0"
-              className="w-full p-2 border rounded dark:bg-gray-800 dark:border-gray-600"
-              placeholder="Amount in ETH"
-            />
+    <div className="backdrop-blur-md bg-black/20 rounded-lg border border-amber-900/30 shadow-xl">
+      <div className="p-6">
+        <h2 className="text-2xl font-bold mb-6 text-center text-amber-300 drop-shadow-lg">Contract Owner Controls</h2>
+        
+        {/* Contract Balance */}
+        <div className="w-full mb-6">
+          <div className="flex justify-between items-center text-amber-200">
+            <span>Contract Balance:</span>
+            <span className="font-bold">
+              {contractBalance ? `${contractBalance} ETH` : '...'}
+            </span>
           </div>
-          <Transaction
-            chainId={BASE_SEPOLIA_CHAIN_ID}
-            calls={getWithdrawCalls()}
-            onStatus={handleOnStatus}
+          <button 
+            onClick={fetchContractBalance}
+            className="mt-2 text-sm text-amber-400 hover:text-amber-300 transition-colors"
           >
-            <TransactionButton 
-              className="w-full py-3 px-4 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-              text="Withdraw ETH"
-            />
-            <TransactionSponsor />
-            <TransactionStatus>
-              <TransactionStatusLabel />
-              <TransactionStatusAction />
-            </TransactionStatus>
-          </Transaction>
+            Refresh Balance
+          </button>
+        </div>
+
+        {/* Withdraw Form */}
+        <div className="w-full">
+          <div className="space-y-4">
+            <h3 className="text-xl font-semibold text-amber-300">Withdraw Funds</h3>
+            <div className="mb-4">
+              <input
+                type="number"
+                value={withdrawAmount}
+                onChange={(e) => setWithdrawAmount(e.target.value)}
+                step="0.01"
+                min="0"
+                className="w-full p-2 bg-black/30 border border-amber-900/50 rounded text-amber-200 placeholder-amber-200/50"
+                placeholder="Amount in ETH"
+              />
+            </div>
+            <Transaction
+              chainId={BASE_SEPOLIA_CHAIN_ID}
+              calls={getWithdrawCalls()}
+              onStatus={handleOnStatus}
+            >
+              <TransactionButton 
+                className="w-full py-3 px-4 bg-amber-600/80 hover:bg-amber-600 text-white rounded-lg transition-colors"
+                text="Withdraw ETH"
+              />
+              <TransactionSponsor />
+              <TransactionStatus>
+                <TransactionStatusLabel />
+                <TransactionStatusAction />
+              </TransactionStatus>
+            </Transaction>
+          </div>
         </div>
       </div>
     </div>

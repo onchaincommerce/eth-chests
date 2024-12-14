@@ -11,6 +11,7 @@ import type { LifecycleStatus } from '@coinbase/onchainkit/transaction';
 import { parseEther, formatEther } from 'ethers/lib/utils';
 import { useAccount } from 'wagmi';
 import { ethers } from 'ethers';
+import { useEthPrice } from '../hooks/useEthPrice';
 
 // Define the type that matches OnchainKit's expectations
 type TransactionCall = {
@@ -36,6 +37,7 @@ export default function ChestPurchaseAndClaim() {
   const [canClaim, setCanClaim] = useState(false);
   const [prizeAmount, setPrizeAmount] = useState<string | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
+  const ethPrice = useEthPrice();
 
   const handleOnStatus = useCallback(async (status: LifecycleStatus) => {
     console.log('Transaction status:', status);
@@ -98,87 +100,93 @@ export default function ChestPurchaseAndClaim() {
     txHash
   });
 
+  const formatUsdValue = (ethAmount: string) => {
+    if (!ethPrice) return '';
+    const usdValue = Number(ethAmount) * ethPrice;
+    return `(≈$${usdValue.toFixed(2)})`;
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center p-8 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-lg max-w-md mx-auto">
+    <div className="text-amber-200">
       {!purchaseBlockNumber ? (
         <div className="w-full">
-          <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md mb-6">
-            <h3 className="text-xl font-semibold mb-4">Open a Treasure Chest</h3>
-            <div className="flex justify-between items-center mb-4">
-              <span>Cost:</span>
+          <h3 className="text-2xl font-semibold mb-6 text-center text-amber-300 drop-shadow-lg">Open a Treasure Chest</h3>
+          <div className="flex justify-between items-center mb-6">
+            <span>Cost:</span>
+            <span className="text-right">
               <span className="font-bold">{CHEST_PRICE} ETH</span>
-            </div>
-            <Transaction
-              chainId={BASE_SEPOLIA_CHAIN_ID}
-              calls={purchaseCalls}
-              onStatus={handleOnStatus}
-            >
-              <TransactionButton 
-                className="w-full py-3 px-4 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors"
-                text="Buy Chest 🎁"
-              />
-              <TransactionSponsor />
-              <TransactionStatus>
-                <TransactionStatusLabel />
-                <TransactionStatusAction />
-              </TransactionStatus>
-            </Transaction>
+              <span className="text-sm ml-2 text-amber-200/80">{formatUsdValue(CHEST_PRICE)}</span>
+            </span>
           </div>
+          <Transaction
+            chainId={BASE_SEPOLIA_CHAIN_ID}
+            calls={purchaseCalls}
+            onStatus={handleOnStatus}
+          >
+            <TransactionButton 
+              className="w-full py-3 px-4 bg-amber-600/80 hover:bg-amber-600 text-white rounded-lg transition-colors"
+              text="Buy Chest 🎁"
+            />
+            <TransactionSponsor />
+            <TransactionStatus>
+              <TransactionStatusLabel />
+              <TransactionStatusAction />
+            </TransactionStatus>
+          </Transaction>
         </div>
       ) : canClaim ? (
         <div className="w-full">
-          <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md mb-6">
-            <h3 className="text-xl font-semibold mb-4">Claim Your Treasure</h3>
-            <div className="mb-4">
-              <p className="text-sm text-gray-600 dark:text-gray-300">
-                Purchase Block: {purchaseBlockNumber}
-              </p>
-            </div>
-            <Transaction 
-              chainId={BASE_SEPOLIA_CHAIN_ID}
-              calls={getClaimCalls()}
-              onStatus={handleOnStatus}
-            >
-              <TransactionButton 
-                className="w-full py-3 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                text="Claim Prize 💎"
-              />
-              <TransactionSponsor />
-              <TransactionStatus>
-                <TransactionStatusLabel />
-                <TransactionStatusAction />
-              </TransactionStatus>
-            </Transaction>
+          <h3 className="text-2xl font-semibold mb-6 text-center text-amber-300 drop-shadow-lg">Claim Your Treasure</h3>
+          <div className="mb-4 text-center">
+            <span className="text-amber-200">
+              Purchase Block: <span className="font-bold">{purchaseBlockNumber}</span>
+            </span>
           </div>
+          <Transaction 
+            chainId={BASE_SEPOLIA_CHAIN_ID}
+            calls={getClaimCalls()}
+            onStatus={handleOnStatus}
+          >
+            <TransactionButton 
+              className="w-full py-3 px-4 bg-amber-600/80 hover:bg-amber-600 text-white rounded-lg transition-colors"
+              text="Claim Prize 💎"
+            />
+            <TransactionSponsor />
+            <TransactionStatus>
+              <TransactionStatusLabel />
+              <TransactionStatusAction />
+            </TransactionStatus>
+          </Transaction>
         </div>
       ) : prizeAmount ? (
-        <div className="w-full bg-green-100 dark:bg-green-900 p-6 rounded-lg text-center">
-          <h3 className="text-xl font-bold mb-4">🎉 Treasure Found! 🎉</h3>
-          <p className="text-2xl font-bold mb-4 text-green-800 dark:text-green-200">
-            {prizeAmount} ETH
-          </p>
+        <div className="text-center">
+          <h3 className="text-2xl font-bold mb-4 text-amber-300 drop-shadow-lg">🎉 Treasure Found! 🎉</h3>
+          <div className="text-2xl font-bold mb-2">
+            <span>{prizeAmount} ETH</span>
+            <span className="text-lg ml-2 text-amber-200/80">{formatUsdValue(prizeAmount)}</span>
+          </div>
           <div className="space-y-4">
             <a 
               href={`${BASE_SEPOLIA_EXPLORER}/tx/${txHash}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block text-blue-600 dark:text-blue-400 hover:underline mb-4"
+              className="inline-block text-amber-400 hover:text-amber-300 transition-colors mb-4"
             >
               View on Block Explorer ↗
             </a>
             <button
               onClick={resetGame}
-              className="w-full py-3 px-4 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors"
+              className="w-full py-3 px-4 bg-amber-600/80 hover:bg-amber-600 text-white rounded-lg transition-colors"
             >
               Play Again! 🎲
             </button>
           </div>
         </div>
       ) : (
-        <div className="w-full bg-yellow-100 dark:bg-yellow-900 p-6 rounded-lg">
-          <p className="text-center text-yellow-800 dark:text-yellow-200">
+        <div className="text-center">
+          <span className="text-amber-200">
             Preparing your treasure... It will be claimable in a few seconds. ⏳
-          </p>
+          </span>
         </div>
       )}
     </div>
