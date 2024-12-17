@@ -33,7 +33,7 @@ const contractInterface = new ethers.utils.Interface([
 ]);
 
 export default function ChestPurchaseAndClaim() {
-  const { address } = useAccount();
+  const { address: _ } = useAccount();
   const [purchaseBlockNumber, setPurchaseBlockNumber] = useState<number | null>(null);
   const [canClaim, setCanClaim] = useState(false);
   const [prizeAmount, setPrizeAmount] = useState<string | null>(null);

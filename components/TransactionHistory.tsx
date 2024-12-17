@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { ethers } from 'ethers';
 import { useEthPrice } from '../hooks/useEthPrice';
 import { CONTRACT_ADDRESS } from '../constants';
+import { useContract } from '../hooks/useContract';
 
 const ITEMS_PER_PAGE = 5;
 const MAX_ITEMS = 100;
@@ -17,18 +18,18 @@ interface PrizeEvent {
 
 interface PrizeTier {
   name: string;
-  minValue: number;
+  value: number;  // exact value instead of ranges
   color: string;
   emoji: string;
 }
 
 const PRIZE_TIERS: PrizeTier[] = [
-  { name: 'All', minValue: 0, color: 'text-amber-200', emoji: '🎯' },
-  { name: 'Legendary', minValue: 0.1, color: 'text-amber-300', emoji: '👑' },
-  { name: 'Epic', minValue: 0.04, color: 'text-purple-300', emoji: '💎' },
-  { name: 'Rare', minValue: 0.015, color: 'text-blue-300', emoji: '🥇' },
-  { name: 'Uncommon', minValue: 0.008, color: 'text-green-300', emoji: '🥈' },
-  { name: 'Common', minValue: 0.004, color: 'text-gray-300', emoji: '🥉' },
+  { name: 'All', value: 0, color: 'text-amber-200', emoji: '🎯' },
+  { name: 'Legendary', value: 0.1, color: 'text-amber-300', emoji: '👑' },
+  { name: 'Epic', value: 0.04, color: 'text-purple-300', emoji: '💎' },
+  { name: 'Rare', value: 0.015, color: 'text-blue-300', emoji: '🥇' },
+  { name: 'Uncommon', value: 0.008, color: 'text-green-300', emoji: '🥈' },
+  { name: 'Common', value: 0.004, color: 'text-gray-300', emoji: '🥉' },
 ];
 
 const contractInterface = new ethers.utils.Interface([
@@ -53,59 +54,101 @@ export default function TransactionHistory() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedTier, setSelectedTier] = useState<string>('All');
   const ethPrice = useEthPrice();
+  const { contract } = useContract();
+  
+  // Track last update time to prevent too frequent updates
+  const [lastUpdate, setLastUpdate] = useState<number>(0);
 
-  const fetchTransactions = async () => {
+  const fetchTransactions = useCallback(async (force: boolean = false) => {
+    // Prevent multiple fetches within 5 seconds unless forced
+    const now = Date.now();
+    if (!force && now - lastUpdate < 5000) {
+      return;
+    }
+
     try {
-      const provider = new ethers.providers.JsonRpcProvider("https://sepolia.base.org");
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, contractInterface, provider);
+      // Only show loading on initial load
+      if (prizeEvents.length === 0) {
+        setLoading(true);
+      }
 
-      // Get the latest block number
+      const provider = new ethers.providers.JsonRpcProvider("https://sepolia.base.org");
       const latestBlock = await provider.getBlockNumber();
 
-      // Fetch events from Basescan API
-      const response = await fetch(`${BASESCAN_API}?module=logs&action=getLogs&fromBlock=0&toBlock=${latestBlock}&address=${CONTRACT_ADDRESS}&topic0=${ethers.utils.id("PrizeAwarded(address,uint256)")}&apikey=${BASESCAN_API_KEY}`);
+      const response = await fetch(
+        `${BASESCAN_API}?module=logs&action=getLogs&fromBlock=0&toBlock=${latestBlock}&address=${CONTRACT_ADDRESS}&topic0=${ethers.utils.id("PrizeAwarded(address,uint256)")}&apikey=${BASESCAN_API_KEY}`
+      );
+      
       const data: BasescanResponse = await response.json();
 
       if (data.status === '1' && data.result) {
-        const events = data.result.map((log: BasescanLog) => {
-          const parsedLog = contractInterface.parseLog({
-            topics: log.topics,
-            data: log.data
-          });
-          
-          return {
-            player: parsedLog.args.player,
-            prize: ethers.utils.formatEther(parsedLog.args.prize),
-            timestamp: parseInt(log.timeStamp, 16),
-            transactionHash: log.transactionHash,
-          };
-        });
+        const events = await Promise.all(data.result.map(async (log: BasescanLog) => {
+          try {
+            const parsedLog = contractInterface.parseLog({
+              topics: log.topics,
+              data: log.data
+            });
+            
+            return {
+              player: parsedLog.args.player,
+              prize: ethers.utils.formatEther(parsedLog.args.prize),
+              timestamp: parseInt(log.timeStamp, 16),
+              transactionHash: log.transactionHash,
+            };
+          } catch (error) {
+            console.error('Error parsing log:', error);
+            return null;
+          }
+        }));
 
-        // Sort by timestamp, most recent first
-        events.sort((a, b) => b.timestamp - a.timestamp);
-        setPrizeEvents(events);
+        const validEvents = events.filter((event): event is PrizeEvent => event !== null)
+          .sort((a, b) => b.timestamp - a.timestamp);
+
+        // Only update if there are new events or this is a forced update
+        if (force || JSON.stringify(validEvents) !== JSON.stringify(prizeEvents)) {
+          setPrizeEvents(validEvents);
+          setLastUpdate(now);
+        }
       }
-      setLoading(false);
     } catch (error) {
       console.error('Error fetching transactions:', error);
+    } finally {
       setLoading(false);
     }
-  };
+  }, [prizeEvents, lastUpdate]);
 
+  // Initial fetch when component mounts
   useEffect(() => {
-    fetchTransactions();
-    const interval = setInterval(fetchTransactions, 30000);
-    return () => clearInterval(interval);
+    fetchTransactions(true);
   }, []);
+
+  // Periodic updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchTransactions(false);
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [fetchTransactions]);
+
+  // Contract dependency effect
+  useEffect(() => {
+    if (contract) {
+      fetchTransactions(true);
+    }
+  }, [contract]);
 
   // Filter and limit to 100 most recent events for the selected tier
   const filteredEvents = prizeEvents
     .filter(event => {
       if (selectedTier === 'All') return true;
+      
       const prizeEth = Number(event.prize);
       const tier = PRIZE_TIERS.find(t => t.name === selectedTier);
-      const nextTier = PRIZE_TIERS.find(t => t.minValue > (tier?.minValue || 0));
-      return prizeEth >= (tier?.minValue || 0) && (!nextTier || prizeEth < nextTier.minValue);
+      
+      if (!tier) return false;
+      
+      // Check for exact match with tier value
+      return Math.abs(prizeEth - tier.value) < 0.0000001; // Use small epsilon for floating point comparison
     })
     .slice(0, MAX_ITEMS);
 
