@@ -11,6 +11,11 @@ import type { LifecycleStatus } from '@coinbase/onchainkit/transaction';
 import { parseEther, formatEther } from 'ethers/lib/utils';
 import { useAccount } from 'wagmi';
 import { ethers } from 'ethers';
+import { 
+  CONTRACT_ADDRESS, 
+  OWNER_ADDRESS, 
+  BASE_SEPOLIA_CHAIN_ID 
+} from '../constants';
 
 // Define the type that matches OnchainKit's expectations
 type TransactionCall = {
@@ -18,10 +23,6 @@ type TransactionCall = {
   data: `0x${string}`;
   value?: bigint;
 };
-
-const CONTRACT_ADDRESS = "0xad0B9085A343be3B5273619A053Ffa5c60789173" as `0x${string}`;
-const OWNER_ADDRESS = "0xc17c78C007FC5C01d796a30334fa12b025426652";
-const BASE_SEPOLIA_CHAIN_ID = 84532;
 
 const contractInterface = new ethers.utils.Interface([
   "function owner() view returns (address)",
@@ -68,7 +69,9 @@ export default function ContractOwner() {
   return (
     <div className="backdrop-blur-md bg-black/20 rounded-lg border border-amber-900/30 shadow-xl">
       <div className="p-6">
-        <h2 className="text-2xl font-bold mb-6 text-center text-amber-300 drop-shadow-lg">Contract Owner Controls</h2>
+        <h2 className="text-2xl font-pirata mb-6 text-center text-amber-300 drop-shadow-lg">
+          Captain's Controls
+        </h2>
         
         {/* Contract Balance */}
         <div className="w-full mb-6">

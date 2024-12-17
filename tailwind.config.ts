@@ -9,7 +9,8 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['DM Sans', 'sans-serif'],
+        pirata: ['var(--font-pirata)'],
+        medieval: ['var(--font-medieval)'],
       },
       colors: {
         background: "var(--background)",

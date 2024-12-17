@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { ethers } from 'ethers';
 import { useEthPrice } from '../hooks/useEthPrice';
+import { CONTRACT_ADDRESS } from '../constants';
 
-const CONTRACT_ADDRESS = "0xad0B9085A343be3B5273619A053Ffa5c60789173" as `0x${string}`;
 const ITEMS_PER_PAGE = 5;
 const MAX_ITEMS = 100;
 const BASESCAN_API_KEY = process.env.NEXT_PUBLIC_BASESCAN_API_KEY;
@@ -189,7 +189,7 @@ export default function TransactionHistory() {
           disabled={currentPage === 1}
           className="px-3 py-1 text-amber-300 hover:bg-amber-600/40 rounded-md disabled:opacity-50 disabled:hover:bg-transparent"
         >
-          ←
+          ��
         </button>
         
         {pages.map((page, index) => (
@@ -211,7 +211,9 @@ export default function TransactionHistory() {
 
   return (
     <div className="backdrop-blur-md bg-black/20 rounded-lg border border-amber-900/30 shadow-xl p-6">
-      <h3 className="text-2xl font-bold text-amber-300 mb-6 text-center">Recent Treasures</h3>
+      <h3 className="text-2xl font-pirata mb-6 text-center text-amber-300 drop-shadow-lg">
+        Recent Treasures
+      </h3>
       
       {/* Tier Filters */}
       <div className="mb-6">

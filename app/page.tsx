@@ -19,6 +19,7 @@ import ContractOwner from '../components/ContractOwner';
 import Image from 'next/image';
 import { useEthPrice } from '../hooks/useEthPrice';
 import TransactionHistory from '../components/TransactionHistory';
+import { CHEST_PRICE } from '../constants';
 
 export default function App() {
   const ethPrice = useEthPrice();
@@ -38,7 +39,7 @@ export default function App() {
   ];
 
   return (
-    <div className="relative min-h-screen font-[MedievalSharp]">
+    <div className="relative min-h-screen">
       {/* Background Image */}
       <div className="fixed inset-0 -z-10">
         <Image
@@ -62,7 +63,7 @@ export default function App() {
               height={60}
               className="rounded-lg"
             />
-            <h1 className="text-4xl text-amber-400 font-bold">ETH Chests</h1>
+            <h1 className="text-4xl text-amber-400 font-pirata">ETH Chests</h1>
           </div>
           <div className="wallet-container">
             <Wallet>
@@ -98,11 +99,12 @@ export default function App() {
           <div className="max-w-2xl mx-auto">
             {/* Pirate themed intro */}
             <div className="text-center mb-12">
-              <p className="text-3xl mb-4 text-amber-300 drop-shadow-lg">
-                Ahoy, brave adventurer! 🏴‍☠️
+              <p className="text-4xl mb-4 text-amber-300 drop-shadow-lg font-pirata">
+                Ahoy, Treasure Hunter! 🏴‍☠️
               </p>
-              <p className="text-xl mb-6 text-amber-200 drop-shadow-lg">
-                Dare ye try yer luck with our mystical chests? Each one holds secrets and treasures untold!
+              <p className="text-xl mb-6 text-amber-200 drop-shadow-lg leading-relaxed">
+                Ye stand before the mystical ETH Chests, where digital doubloons await the brave! 
+                Will ye risk a mere {CHEST_PRICE} ETH to claim yer share of the bounty?
               </p>
             </div>
             
@@ -116,13 +118,21 @@ export default function App() {
               </div>
               
               {/* Transaction History */}
-              <TransactionHistory />
+              <div className="relative">
+                <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
+                  <span className="text-amber-300 text-2xl">⚓</span>
+                </div>
+                <TransactionHistory />
+              </div>
               
               {/* Prize tiers info */}
               <div className="backdrop-blur-md bg-black/20 p-8 rounded-lg border border-amber-900/30 shadow-xl">
                 <h2 className="text-2xl font-bold mb-6 text-center text-amber-300 drop-shadow-lg">
-                  Treasure Tiers
+                  The Treasure Map 🗺️
                 </h2>
+                <p className="text-amber-200/80 mb-6 text-center">
+                  Chart yer course to riches! Here be the bounties that await:
+                </p>
                 <div className="space-y-4 text-amber-200">
                   {PRIZE_TIERS.map(({ emoji, tier, chance, amount }) => (
                     <div key={tier} className="flex justify-between items-center">
@@ -134,6 +144,9 @@ export default function App() {
                     </div>
                   ))}
                 </div>
+                <p className="mt-6 text-amber-200/70 text-sm text-center italic">
+                  "Fortune favors the bold, but the sea decides who claims her treasures!"
+                </p>
               </div>
 
               {/* Contract Owner container will only render if owner is connected */}
@@ -146,7 +159,9 @@ export default function App() {
       {/* Footer */}
       <footer className="bg-[#2c1810]/80 backdrop-blur-sm text-amber-400 py-4 mt-8 relative z-20">
         <div className="container mx-auto px-4 text-center">
-          <p>May fortune favor the bold! ⚔️</p>
+          <p className="text-lg">
+            May the winds of fortune fill yer sails! ⛵
+          </p>
         </div>
       </footer>
     </div>

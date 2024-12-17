@@ -12,6 +12,12 @@ import { parseEther, formatEther } from 'ethers/lib/utils';
 import { useAccount } from 'wagmi';
 import { ethers } from 'ethers';
 import { useEthPrice } from '../hooks/useEthPrice';
+import { 
+  CONTRACT_ADDRESS, 
+  CHEST_PRICE, 
+  BASE_SEPOLIA_CHAIN_ID, 
+  BASE_SEPOLIA_EXPLORER 
+} from '../constants';
 
 // Define the type that matches OnchainKit's expectations
 type TransactionCall = {
@@ -19,11 +25,6 @@ type TransactionCall = {
   data: `0x${string}`;
   value?: bigint;
 };
-
-const CONTRACT_ADDRESS = "0xad0B9085A343be3B5273619A053Ffa5c60789173" as `0x${string}`;
-const CHEST_PRICE = "0.01";
-const BASE_SEPOLIA_CHAIN_ID = 84532;
-const BASE_SEPOLIA_EXPLORER = "https://sepolia.basescan.org";
 
 const contractInterface = new ethers.utils.Interface([
   "function buyChest() external payable",
@@ -110,9 +111,11 @@ export default function ChestPurchaseAndClaim() {
     <div className="text-amber-200">
       {!purchaseBlockNumber ? (
         <div className="w-full">
-          <h3 className="text-2xl font-semibold mb-6 text-center text-amber-300 drop-shadow-lg">Open a Treasure Chest</h3>
+          <h3 className="text-2xl font-pirata mb-6 text-center text-amber-300 drop-shadow-lg">
+            Unlock the Chest's Secrets
+          </h3>
           <div className="flex justify-between items-center mb-6">
-            <span>Cost:</span>
+            <span>Offering:</span>
             <span className="text-right">
               <span className="font-bold">{CHEST_PRICE} ETH</span>
               <span className="text-sm ml-2 text-amber-200/80">{formatUsdValue(CHEST_PRICE)}</span>
@@ -136,7 +139,9 @@ export default function ChestPurchaseAndClaim() {
         </div>
       ) : canClaim ? (
         <div className="w-full">
-          <h3 className="text-2xl font-semibold mb-6 text-center text-amber-300 drop-shadow-lg">Claim Your Treasure</h3>
+          <h3 className="text-2xl font-semibold mb-6 text-center text-amber-300 drop-shadow-lg">
+            Claim Yer Bounty!
+          </h3>
           <div className="mb-4 text-center">
             <span className="text-amber-200">
               Purchase Block: <span className="font-bold">{purchaseBlockNumber}</span>
@@ -160,7 +165,9 @@ export default function ChestPurchaseAndClaim() {
         </div>
       ) : prizeAmount ? (
         <div className="text-center">
-          <h3 className="text-2xl font-bold mb-4 text-amber-300 drop-shadow-lg">🎉 Treasure Found! 🎉</h3>
+          <h3 className="text-2xl font-bold mb-4 text-amber-300 drop-shadow-lg">
+            🎉 Treasure Secured! 🎉
+          </h3>
           <div className="text-2xl font-bold mb-2">
             <span>{prizeAmount} ETH</span>
             <span className="text-lg ml-2 text-amber-200/80">{formatUsdValue(prizeAmount)}</span>
@@ -185,7 +192,7 @@ export default function ChestPurchaseAndClaim() {
       ) : (
         <div className="text-center">
           <span className="text-amber-200">
-            Preparing your treasure... It will be claimable in a few seconds. ⏳
+            The chest's lock be turnin'... Stand ready to claim yer prize! ⏳
           </span>
         </div>
       )}
